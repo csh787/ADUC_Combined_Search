@@ -1,0 +1,226 @@
+#$t = '[DllImport("user32.dll")] public static extern bool ShowWindow(int handle, int state);'
+#add-type -name win -member $t -namespace native
+#[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0)
+Function Set-WindowSize {
+    Param([int]$x=$host.ui.rawui.windowsize.width,
+          [int]$y=$host.ui.rawui.windowsize.heigth)
+    
+        $size=New-Object System.Management.Automation.Host.Size($x,$y)
+        $host.ui.rawui.WindowSize=$size	
+     
+    }
+    Set-WindowSize 130 58
+CLS
+
+
+
+############# SET COLOR OUTPUT ##############
+#############################################
+function Write-ColorOutput($ForegroundColor)
+{
+    # save the current color
+    $fc = $host.UI.RawUI.ForegroundColor
+
+    # set the new color
+    $host.UI.RawUI.ForegroundColor = $ForegroundColor
+
+    # output
+    if ($args) {
+        Write-Output $args
+    }
+    else {
+        $input | Write-Output
+    }
+
+    # restore the original color
+    $host.UI.RawUI.ForegroundColor = $fc
+}
+############# SET COLOR OUTPUT ##############
+#############################################
+
+
+
+
+function Show-Menu
+{
+    param (
+        [string]$Title = 'MAKE A SELECTION'
+    )
+    Clear-Host
+    Write-Host "========================================================================================================================
+=================================================== MAKE A SELECTION ===================================================
+
+"
+    
+    Write-Host "          1: Press '1' Search for a USER by first and last name."
+    Write-Host "          2: Press '2' Search for a USER by UID."
+    Write-Host "          3: Press '3' List what SECURITY GROUPS a USER belongs to."
+    Write-Host "          4: Press '4' List all SECURITY GROUPS and who belongs to them."
+    Write-Host "          5: Press 'q' Close script.
+    "
+    Write-Host "
+========================================================================================================================
+========================================================================================================================
+"
+}
+do
+ {
+     Show-Menu
+     ### Location Parameters ###
+
+
+     $selection = Read-Host "Make a selection and press Enter.
+This part of the script is designed to repeat. Selecting q will close the script."
+     Write-Host ""
+     switch ($selection)
+
+
+
+
+###################### 1 ########################
+###################### 1 ########################
+        {
+         '1' {CLS
+Write-Host "========================================================================================================================
+========================================================================================================================
+
+                                                     USERNAME SEARCH
+
+========================================================================================================================
+========================================================================================================================"
+Write-Host "Green = enabled account" -ForegroundColor Green
+Write-Host "Red = disabled account
+" -ForegroundColor Red
+
+
+
+
+Write-Host "Type in the user's name. If you don't know the full name type in as much
+correct information as you can. For instance, if you are searching for 
+John Smith, you can enter John S to search for that user:
+________________________________________________________________________"
+$ADUser = Read-Host
+Get-ADUser -Filter "DisplayName -like '*$ADUser*'" -Properties * | Where { $_.Enabled -eq $True} | select SamAccountName, GivenName, SurName, TelephoneNumber, EmailAddress, Title | Sort-Object SurName | Format-Table -AutoSize | Write-ColorOutput green
+Get-ADUser -Filter "DisplayName -like '*$ADUser*'" -Properties * | Where { $_.Enabled -eq $False} | select SamAccountName, GivenName, SurName, TelephoneNumber, EmailAddress, Title | Sort-Object SurName | Format-Table -AutoSize | Write-ColorOutput red
+Start-Sleep -Seconds 1
+Read-Host "
+
+Press Enter to restart script."
+          'User Group Membership'
+###################### 1 ########################
+###################### 1 ########################
+
+
+
+
+###################### 2 ########################
+###################### 2 ########################
+        }'2' 
+        {CLS
+        Write-Host "========================================================================================================================
+========================================================================================================================
+
+                                                    SEARCH FOR USER BY UID
+                                        
+========================================================================================================================
+========================================================================================================================
+"
+        
+Write-Host "
+Type in the user's UID (u0123456).
+_________________________________"
+$UID = Read-Host
+Get-ADUser -Filter "SamAccountName -like '*$UID*'" -Properties * | Where { $_.Enabled -eq $True} | select SamAccountName, GivenName, SurName, TelephoneNumber, EmailAddress, Title | Sort-Object SurName | Format-Table -AutoSize | Write-ColorOutput green
+
+Read-Host "
+
+Press Enter to restart script."
+       
+###################### 2 ########################
+###################### 2 ########################
+
+
+
+
+###################### 3 ########################
+###################### 3 ########################
+         } '3' 
+         {CLS
+        Write-Host "========================================================================================================================
+========================================================================================================================
+
+                                                 USER GROUP MEMBERSHIP
+                                        
+========================================================================================================================
+========================================================================================================================
+"
+Start-Sleep -Milliseconds 500
+Write-Host "Type in the user UID."
+$ADUserGroups = Read-Host
+Write-Host "
+"
+Get-ADUser $ADUserGroups -Properties * | Where { $_.Enabled -eq $True} | select SamAccountName, GivenName, SurName, TelephoneNumber, EmailAddress, Title | Sort-Object SurName | Format-Table -AutoSize | Write-ColorOutput green
+Get-ADPrincipalGroupMembership -Identity $ADUserGroups | Select-Object name | Sort-Object Name | Format-Wide Name -Column 2
+Read-Host "Press Enter to restart script."
+'User Group Discovery'
+###################### 3 ########################
+###################### 3 ########################
+
+Get-aduser -Filter 
+
+
+###################### 4 ########################
+###################### 4 ########################
+        }'4' 
+        {CLS
+        Write-Host "========================================================================================================================
+========================================================================================================================
+
+                                                 RETRIEVING UUHC AD GROUPS...
+                                        
+========================================================================================================================
+========================================================================================================================
+"
+Start-Sleep -Milliseconds 400
+Get-ADGroup -filter {name -like "UUHC-HCU*"} | select Name | Sort-Object Name | Format-Wide Name -Column 3
+Write-Host "========================================================================================================================
+========================================================================================================================
+
+                                                 RETRIEVING UUHP AD GROUPS...
+                                        
+========================================================================================================================
+========================================================================================================================
+"
+Start-Sleep -Seconds 1
+Get-ADGroup -filter {name -like "UUHP*"} | select Name | Sort-Object Name | Format-Wide Name -Column 3
+
+Write-Host "Enter in the Group to see which users are in that group. If an error shows, 
+try searching without the UUHC/UUHP header."
+$ADUCGroups = Read-Host
+
+CLS
+Write-Host "========================================================================================================================
+Displaying users in *$ADUCGroups* "
+Write-Host "Green = enabled account" -ForegroundColor Green
+Write-Host "Red = disabled account" -ForegroundColor Red
+Write-Host "========================================================================================================================"
+
+
+
+$CountEnabledUsers = Get-ADGroupMember -Identity $ADUCGroups | Get-ADUser -Property DisplayName, Title, Department, Mail | Where { $_.Enabled -eq $True} | Select Name, DisplayName, Department, Mail, Title | Sort-Object DisplayName  | Format-Table -AutoSize | Write-ColorOutput green
+$TotalEnabledUsers = $CountEnabledUsers.Count
+$4 = 4
+$Subtract4 = $TotalEnabledUsers-$4
+Get-ADGroupMember -Identity $ADUCGroups | Get-ADUser -Property DisplayName, Title, Department, Mail | Where { $_.Enabled -eq $True} | Select Name, DisplayName, Department, Mail, Title | Sort-Object DisplayName  | Format-Table -AutoSize | Write-ColorOutput green
+Write-Host "There are "$Subtract4" users listed"
+
+Get-ADGroupMember -Identity $ADUCGroups | Get-ADUser -Property DisplayName, Title, Department, Mail | Where { $_.Enabled -eq $False} | Select Name, DisplayName, Department, Mail, Title | Sort-Object DisplayName | Format-Table -AutoSize | Write-ColorOutput red
+Read-Host "Press Enter to restart script."
+'ADUC Group Discovery'
+###################### 4 ########################
+###################### 4 ########################
+
+    }
+    }
+}
+ until ($selection -eq 'q')
