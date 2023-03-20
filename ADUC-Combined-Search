@@ -9,10 +9,12 @@
 # *
 # * Purpose :	Consolidate ADUC tools.  
 # * 			1)  Search for User by First and Last Name
-# * 			2)	Search for User by UID  
-# * 			3)	List what SECURITY GROUPS a USER belongs to.
-# *				4)  List all SECURITY GROUPS and who belongs to them.
-# * 			5)  Determine the last time user password was changed.
+# * 			2)  search for User by UID  
+# * 			3)  List what SECURITY GROUPS a USER belongs to.
+# *			4)  List all SECURITY GROUPS and who belongs to them.
+# * 			5)  Show when the last time password was (re)set.
+# * 			6)  Show when the last time user logged in.
+# * 			7)  Export Users in a Group
 # *
 # * Revision History  :
 # * Date                    Author              	Ref         Revision (Date in YYYYMMDD format)		NOTE:
@@ -80,9 +82,9 @@ function Show-Menu
     Write-Host "          2: Press '2' Search for a USER by UID."
     Write-Host "          3: Press '3' List what SECURITY GROUPS a USER belongs to."
     Write-Host "          4: Press '4' List all SECURITY GROUPS and who belongs to them."
-	Write-Host "          5: Press '5' Show when the last time password was (re)set."
-	Write-Host "          6: Press '6' Show when the last time user logged in"
-	Write-Host "          7: Press '7' Export Users in a Group"
+    Write-Host "          5: Press '5' Show when the last time password was (re)set."
+    Write-Host "          6: Press '6' Show when the last time user logged in"
+    Write-Host "          7: Press '7' Export Users in a Group"
     Write-Host "          Q: Press 'q' Close script."
     Write-Host "
 ========================================================================================================================
